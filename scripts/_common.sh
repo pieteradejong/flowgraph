@@ -172,14 +172,14 @@ detect_python() {
     [ -f "$PROJECT_ROOT/pyproject.toml" ] || \
     [ -f "$PROJECT_ROOT/setup.py" ] || \
     [ -f "$PROJECT_ROOT/Pipfile" ] || \
-    [ -d "$PROJECT_ROOT/${PYTHON_DIR:-backend}" ] && [ -f "$PROJECT_ROOT/${PYTHON_DIR:-backend}/requirements.txt" ] || \
-    [ -d "$PROJECT_ROOT/${PYTHON_DIR:-backend}" ] && [ -f "$PROJECT_ROOT/${PYTHON_DIR:-backend}/pyproject.toml" ]
+    { [ -f "$PROJECT_ROOT/${PYTHON_DIR:-backend}/requirements.txt" ] || \
+      [ -f "$PROJECT_ROOT/${PYTHON_DIR:-backend}/pyproject.toml" ]; }
 }
 
 # Detect Node.js project
 detect_node() {
     [ -f "$PROJECT_ROOT/package.json" ] || \
-    [ -d "$PROJECT_ROOT/${NODE_DIR:-frontend}" ] && [ -f "$PROJECT_ROOT/${NODE_DIR:-frontend}/package.json" ]
+    [ -f "$PROJECT_ROOT/${NODE_DIR:-frontend}/package.json" ]
 }
 
 # Detect Rust project

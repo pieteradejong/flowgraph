@@ -1,0 +1,18 @@
+{
+  "name": "flowgraph",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Graph-based operational simulator",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "coverage": "vitest run --coverage",
+    "type-check": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "^4.1.5",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.5"
+  }
+}
