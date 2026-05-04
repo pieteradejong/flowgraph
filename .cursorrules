@@ -54,3 +54,37 @@ This project uses three shell scripts as the source of truth:
 2. Check CONVENTIONS.md for style guidance
 3. Look at existing code for examples
 4. Ask for clarification rather than guessing
+
+Important: the nature of this project is this:
+
+Project: FlowGraph — graph-based operational simulator
+
+Rules:
+- Local-only first. Do NOT introduce Supabase yet.
+- Keep simulation logic separate from UI.
+- Use TypeScript with clear domain types.
+- Prefer simple, maintainable code over abstractions.
+
+Architecture:
+src/domain → simulation logic (pure functions)
+src/components → React UI
+React Flow for graph rendering
+
+Simulation:
+- Nodes: source, processor, sink
+- Edges: capacity, load, latency
+- utilization = load / capacity
+- status: healthy (<0.7), stressed, saturated, overloaded (>1.0)
+
+UI:
+- Graph canvas (center)
+- Inspector (right)
+- Metrics panel (bottom)
+- Controls (step, reset, randomize)
+
+Goal:
+Interactive graph simulator with step-based updates and visible bottlenecks.
+
+
+
+
