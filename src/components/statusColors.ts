@@ -1,8 +1,8 @@
 import type { EdgeStatus } from '../domain/types';
 
 export const STATUS_COLORS: Record<EdgeStatus, string> = {
-  healthy: '#10b981',
-  stressed: '#f59e0b',
+  healthy: '#22c55e',
+  stressed: '#eab308',
   saturated: '#f97316',
   overloaded: '#ef4444',
 };
