@@ -57,9 +57,9 @@
 
 Before declaring Phase 1 complete:
 
-- [ ] `./scripts/test.sh` exits 0.
-- [ ] `./scripts/run.sh` starts the dev server with no console errors.
-- [ ] Loading the app shows `sampleGraph` with one healthy, one stressed, two saturated, one overloaded edge after one click of "Step".
-- [ ] Clicking "Reset" returns all edge loads to 0.
-- [ ] Clicking a node or edge populates the inspector.
-- [ ] Metrics panel updates after each step.
+- [x] `./scripts/test.sh` exits 0.
+- [x] `./scripts/run.sh` starts the dev server with no console errors.
+- [x] Loading the app shows `sampleGraph` with one healthy, one stressed, two saturated, one overloaded edge after one click of "Step".
+- [x] Clicking a node or edge populates the inspector.
+- [x] Metrics panel updates after each step.
+- [ ] Clicking "Reset" returns all edge loads to 0. *(not yet eyeballed)*

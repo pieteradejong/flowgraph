@@ -1,4 +1,4 @@
-import type { Edge as RFEdge, Node as RFNode } from '@xyflow/react';
+import { Position, type Edge as RFEdge, type Node as RFNode } from '@xyflow/react';
 import type { Graph } from '../domain/types';
 import { NODE_BACKGROUND, STATUS_COLORS, STATUS_STROKE_WIDTH } from './statusColors';
 
@@ -66,6 +66,8 @@ export const toReactFlowNodes = (graph: Graph, selectedId: string | null): RFNod
       id: n.id,
       position: pos,
       data: { label: `${n.label ?? n.id}${rateSuffix}` },
+      sourcePosition: Position.Right,
+      targetPosition: Position.Left,
       style: {
         background: NODE_BACKGROUND[n.kind],
         color: '#fff',
