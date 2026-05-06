@@ -1,4 +1,5 @@
 import { SCENARIOS } from '../domain/scenarios';
+import type { NodeKind } from '../domain/types';
 
 interface Props {
   scenarioId: string;
@@ -6,21 +7,34 @@ interface Props {
   onStep: () => void;
   onReset: () => void;
   onRandomize: () => void;
+  onAddNode: (kind: NodeKind) => void;
 }
 
-export const Controls = ({ scenarioId, onScenarioChange, onStep, onReset, onRandomize }: Props) => (
+export const Controls = ({
+  scenarioId,
+  onScenarioChange,
+  onStep,
+  onReset,
+  onRandomize,
+  onAddNode,
+}: Props) => (
   <header className="controls">
     <h1 className="controls__title">FlowGraph</h1>
     <label className="controls__scenario">
       <span>Scenario</span>
       <select value={scenarioId} onChange={(e) => onScenarioChange(e.target.value)}>
         {SCENARIOS.map((s) => (
-          <option key={s.id} value={s.id}>
-            {s.name}
-          </option>
+          <option key={s.id} value={s.id}>{s.name}</option>
         ))}
+        <option value="blank">Blank</option>
       </select>
     </label>
+    <div className="controls__group">
+      <span className="controls__group-label">Add</span>
+      <button type="button" onClick={() => onAddNode('source')}>Source</button>
+      <button type="button" onClick={() => onAddNode('processor')}>Processor</button>
+      <button type="button" onClick={() => onAddNode('sink')}>Sink</button>
+    </div>
     <div className="controls__buttons">
       <button type="button" onClick={onStep}>Step</button>
       <button type="button" onClick={onReset}>Reset</button>

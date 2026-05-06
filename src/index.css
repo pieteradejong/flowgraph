@@ -34,6 +34,8 @@ html, body, #root { height: 100%; margin: 0; }
   border-radius: 4px;
   cursor: pointer;
 }
+.controls__group { display: flex; align-items: center; gap: 6px; padding-left: 16px; border-left: 1px solid #334155; }
+.controls__group-label { font-size: 11px; color: #cbd5e1; text-transform: uppercase; letter-spacing: 0.05em; margin-right: 4px; }
 .controls__buttons { display: flex; gap: 8px; margin-left: auto; }
 .controls button {
   padding: 6px 14px;
@@ -62,10 +64,32 @@ html, body, #root { height: 100%; margin: 0; }
 }
 .inspector h2 { margin: 0 0 12px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; }
 .inspector--empty p { color: #94a3b8; font-size: 13px; }
-.inspector dl { margin: 0; display: grid; gap: 6px; }
-.inspector__row { display: grid; grid-template-columns: 90px 1fr; font-size: 13px; }
-.inspector__row dt { color: #64748b; }
-.inspector__row dd { margin: 0; color: #0f172a; word-break: break-all; }
+.inspector__field { display: grid; grid-template-columns: 90px 1fr; align-items: center; gap: 8px; font-size: 13px; margin-bottom: 8px; }
+.inspector__field label { color: #64748b; }
+.inspector__field input,
+.inspector__field select {
+  font: inherit;
+  padding: 4px 6px;
+  border: 1px solid #cbd5e1;
+  border-radius: 3px;
+  background: #fff;
+  color: #0f172a;
+  width: 100%;
+}
+.inspector__field input:focus,
+.inspector__field select:focus { outline: 2px solid #2563eb; outline-offset: -1px; border-color: transparent; }
+.inspector__readonly { color: #0f172a; word-break: break-all; }
+.inspector__delete {
+  margin-top: 12px;
+  padding: 6px 12px;
+  font-size: 13px;
+  border: 1px solid #ef4444;
+  background: transparent;
+  color: #ef4444;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.inspector__delete:hover { background: #ef4444; color: #fff; }
 
 .metrics {
   display: flex;
