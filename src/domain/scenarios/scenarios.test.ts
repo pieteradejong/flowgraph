@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { computeMetrics } from '../metrics';
-import { step } from '../simulation';
+import { runForSteps } from '../simulation';
 import { DEFAULT_SCENARIO, SCENARIOS, getScenario } from './index';
+
+/**
+ * Generous upper bound on steps needed for any scenario to reach steady state.
+ * Satellite Network has the longest cumulative latency path (~12), so 30 is
+ * comfortably above any current scenario's transit time.
+ */
+const STEADY_STATE_STEPS = 30;
 
 describe('scenarios registry', () => {
   it('contains the default scenario', () => {
@@ -57,13 +64,13 @@ describe.each(SCENARIOS)('scenario: $name', (scenario) => {
     }
   });
 
-  it('produces non-zero sink throughput after one step', () => {
-    const m = computeMetrics(step(graph));
+  it('produces non-zero sink throughput at steady state', () => {
+    const m = computeMetrics(runForSteps(graph, STEADY_STATE_STEPS));
     expect(m.sinkThroughput).toBeGreaterThan(0);
   });
 
-  it('exhibits at least one non-healthy edge after one step (something interesting happens)', () => {
-    const stepped = step(graph);
+  it('exhibits at least one non-healthy edge at steady state', () => {
+    const stepped = runForSteps(graph, STEADY_STATE_STEPS);
     const nonHealthy = stepped.edges.filter((e) => e.status !== 'healthy');
     expect(nonHealthy.length).toBeGreaterThan(0);
   });

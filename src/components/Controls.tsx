@@ -8,6 +8,8 @@ interface Props {
   onReset: () => void;
   onRandomize: () => void;
   onAddNode: (kind: NodeKind) => void;
+  playing: boolean;
+  onTogglePlay: () => void;
 }
 
 export const Controls = ({
@@ -17,6 +19,8 @@ export const Controls = ({
   onReset,
   onRandomize,
   onAddNode,
+  playing,
+  onTogglePlay,
 }: Props) => (
   <header className="controls">
     <h1 className="controls__title">FlowGraph</h1>
@@ -36,9 +40,16 @@ export const Controls = ({
       <button type="button" onClick={() => onAddNode('sink')}>Sink</button>
     </div>
     <div className="controls__buttons">
-      <button type="button" onClick={onStep}>Step</button>
+      <button
+        type="button"
+        onClick={onTogglePlay}
+        className={playing ? 'controls__play controls__play--on' : 'controls__play'}
+      >
+        {playing ? 'Pause' : 'Play'}
+      </button>
+      <button type="button" onClick={onStep} disabled={playing}>Step</button>
       <button type="button" onClick={onReset}>Reset</button>
-      <button type="button" onClick={onRandomize}>Randomize</button>
+      <button type="button" onClick={onRandomize} disabled={playing}>Randomize</button>
     </div>
   </header>
 );

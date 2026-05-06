@@ -1,4 +1,4 @@
-import type { EdgeStatus, FlowEdge, FlowNode, Graph } from './types';
+import type { EdgeStatus, FlowEdge, Graph } from './types';
 
 const STRESSED = 0.7;
 const SATURATED = 0.95;
@@ -12,6 +12,27 @@ export const statusFor = (u: number): EdgeStatus => {
   if (u >= SATURATED) return 'saturated';
   if (u >= STRESSED) return 'stressed';
   return 'healthy';
+};
+
+const pipelineLength = (edge: FlowEdge): number => Math.max(0, Math.floor(edge.latency));
+
+/**
+ * Returns a pipeline buffer of the right length for `edge`. If the edge already
+ * carries a buffer, it is reshaped (truncated newest-first or zero-padded
+ * oldest-first) when the latency has been edited mid-run.
+ */
+const ensurePipeline = (edge: FlowEdge): number[] => {
+  const len = pipelineLength(edge);
+  const existing = edge.pipeline ?? [];
+  if (existing.length === len) return existing.slice();
+  if (existing.length > len) return existing.slice(existing.length - len);
+  return [...new Array<number>(len - existing.length).fill(0), ...existing];
+};
+
+/** Total in-flight flow on an edge — useful for inspector/metrics display. */
+export const inflightOn = (edge: FlowEdge): number => {
+  const pipe = edge.pipeline ?? [];
+  return pipe.reduce((s, v) => s + v, 0);
 };
 
 const topologicalOrder = (graph: Graph): string[] => {
@@ -36,61 +57,84 @@ const topologicalOrder = (graph: Graph): string[] => {
     }
   }
 
-  // Append any remaining nodes (cycles) to keep the function total.
   for (const n of graph.nodes) {
     if (!order.includes(n.id)) order.push(n.id);
   }
   return order;
 };
 
-const inflowFor = (
-  node: FlowNode,
-  graph: Graph,
-  edgeLoad: Map<string, number>,
-): number => {
-  if (node.kind === 'source') return node.rate ?? 0;
-  let sum = 0;
-  for (const e of graph.edges) {
-    if (e.target === node.id) sum += edgeLoad.get(e.id) ?? 0;
-  }
-  return sum;
-};
-
 /**
  * Advances the simulation by one step.
  *
  * Pure: returns a new `Graph` without mutating the input.
- * Sources emit their `rate`, processors forward all inflow, sinks absorb.
- * A node's outflow is split across outgoing edges proportionally to capacity.
- * Edge `load` may exceed `capacity`, producing an `overloaded` status.
+ *
+ * Two-phase pipeline propagation:
+ * 1. In topological order, compute each node's inflow this step (sources emit
+ *    their `rate`; non-sources sum the heads of their incoming pipelines —
+ *    flow that has finished traversing the upstream edge — or, for edges with
+ *    `latency: 0`, the just-computed outflow from upstream). Distribute that
+ *    inflow proportionally across outgoing edges by capacity.
+ * 2. Commit each edge: shift the pipeline left, push this step's outflow as
+ *    the new tail. `load` is the just-pushed outflow (the rate entering the
+ *    edge), which after `latency` more steps will reach the target.
  */
 export const step = (graph: Graph): Graph => {
   const order = topologicalOrder(graph);
   const nodeById = new Map(graph.nodes.map((n) => [n.id, n]));
-  const edgeLoad = new Map<string, number>();
+  const oldPipelines = new Map<string, number[]>(
+    graph.edges.map((e) => [e.id, ensurePipeline(e)]),
+  );
+  const outflow = new Map<string, number>();
 
   for (const id of order) {
     const node = nodeById.get(id);
     if (!node || node.kind === 'sink') continue;
 
-    const inflow = inflowFor(node, graph, edgeLoad);
+    let inflow = 0;
+    if (node.kind === 'source') {
+      inflow = node.rate ?? 0;
+    } else {
+      for (const e of graph.edges) {
+        if (e.target !== id) continue;
+        if (pipelineLength(e) === 0) {
+          inflow += outflow.get(e.id) ?? 0;
+        } else {
+          const pipe = oldPipelines.get(e.id);
+          inflow += pipe?.[0] ?? 0;
+        }
+      }
+    }
+
     const outgoing = graph.edges.filter((e) => e.source === id);
     if (outgoing.length === 0) continue;
-
     const totalCapacity = outgoing.reduce((s, e) => s + e.capacity, 0);
     for (const e of outgoing) {
       const share = totalCapacity > 0 ? inflow * (e.capacity / totalCapacity) : 0;
-      edgeLoad.set(e.id, share);
+      outflow.set(e.id, share);
     }
   }
 
   const edges: FlowEdge[] = graph.edges.map((e) => {
-    const load = edgeLoad.get(e.id) ?? 0;
-    return { ...e, load, status: statusFor(e.capacity > 0 ? load / e.capacity : 0) };
+    const out = outflow.get(e.id) ?? 0;
+    const oldPipe = oldPipelines.get(e.id) ?? [];
+    const newPipe = pipelineLength(e) === 0 ? [] : [...oldPipe.slice(1), out];
+    return {
+      ...e,
+      load: out,
+      pipeline: newPipe,
+      status: statusFor(e.capacity > 0 ? out / e.capacity : 0),
+    };
   });
 
   return {
     nodes: graph.nodes.map((n) => ({ ...n })),
     edges,
   };
+};
+
+/** Apply `step` `n` times. `n <= 0` returns a fresh shallow copy. */
+export const runForSteps = (graph: Graph, n: number): Graph => {
+  let g = graph;
+  for (let i = 0; i < n; i++) g = step(g);
+  return g;
 };

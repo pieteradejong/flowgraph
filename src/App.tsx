@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Controls } from './components/Controls';
 import { GraphCanvas } from './components/GraphCanvas';
 import { Inspector } from './components/Inspector';
@@ -18,6 +18,7 @@ import { step } from './domain/simulation';
 import type { FlowEdge, FlowNode, Graph, NodeKind } from './domain/types';
 
 const BLANK_SCENARIO_ID = 'blank';
+const PLAY_INTERVAL_MS = 600;
 
 const initialGraphFor = (id: string): Graph =>
   id === BLANK_SCENARIO_ID ? emptyGraph : getScenario(id).graph;
@@ -26,11 +27,19 @@ export const App = () => {
   const [scenarioId, setScenarioId] = useState<string>(DEFAULT_SCENARIO.id);
   const [graph, setGraph] = useState<Graph>(DEFAULT_SCENARIO.graph);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [playing, setPlaying] = useState(false);
+
+  useEffect(() => {
+    if (!playing) return;
+    const id = setInterval(() => setGraph((g) => step(g)), PLAY_INTERVAL_MS);
+    return () => clearInterval(id);
+  }, [playing]);
 
   const handleScenarioChange = useCallback((id: string) => {
     setScenarioId(id);
     setGraph(initialGraphFor(id));
     setSelectedId(null);
+    setPlaying(false);
   }, []);
 
   const handleStep = useCallback(() => setGraph((g) => step(g)), []);
@@ -38,6 +47,7 @@ export const App = () => {
   const handleReset = useCallback(() => {
     setGraph(initialGraphFor(scenarioId));
     setSelectedId(null);
+    setPlaying(false);
   }, [scenarioId]);
 
   const handleRandomize = useCallback(
@@ -75,6 +85,8 @@ export const App = () => {
     setSelectedId(null);
   }, []);
 
+  const handleTogglePlay = useCallback(() => setPlaying((p) => !p), []);
+
   return (
     <div className="app">
       <Controls
@@ -84,6 +96,8 @@ export const App = () => {
         onReset={handleReset}
         onRandomize={handleRandomize}
         onAddNode={handleAddNode}
+        playing={playing}
+        onTogglePlay={handleTogglePlay}
       />
       <main className="app__main">
         <div className="app__canvas">

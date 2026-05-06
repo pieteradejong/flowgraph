@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { statusFor, step, utilization } from './simulation';
+import { inflightOn, runForSteps, statusFor, step, utilization } from './simulation';
 import type { FlowEdge, Graph } from './types';
 
 const edge = (overrides: Partial<FlowEdge> & Pick<FlowEdge, 'id' | 'source' | 'target' | 'capacity'>): FlowEdge => ({
@@ -85,7 +85,7 @@ describe('step', () => {
     expect(utilization(result.edges[0]!)).toBeCloseTo(utilization(result.edges[1]!));
   });
 
-  it('propagates load through a multi-hop chain', () => {
+  it('propagates load through a multi-hop chain (steady state)', () => {
     const graph: Graph = {
       nodes: [
         { id: 's', kind: 'source', rate: 30 },
@@ -99,8 +99,84 @@ describe('step', () => {
         edge({ id: 'e3', source: 'p2', target: 't', capacity: 100 }),
       ],
     };
-    const result = step(graph);
+    // Each edge has latency=1 (default in helper), so it takes 3 steps for
+    // the source emission to fill all three edge pipelines.
+    const result = runForSteps(graph, 3);
     expect(result.edges.map((e) => e.load)).toEqual([30, 30, 30]);
+  });
+
+  it('takes `latency` steps for flow to traverse an edge', () => {
+    const graph: Graph = {
+      nodes: [
+        { id: 's', kind: 'source', rate: 50 },
+        { id: 'p', kind: 'processor' },
+        { id: 't', kind: 'sink' },
+      ],
+      edges: [
+        edge({ id: 'e1', source: 's', target: 'p', capacity: 100, latency: 3 }),
+        edge({ id: 'e2', source: 'p', target: 't', capacity: 100, latency: 1 }),
+      ],
+    };
+    // After 1 step: only e1 has flow entering it; e2 still empty.
+    const s1 = step(graph);
+    expect(s1.edges[0]?.load).toBe(50);
+    expect(s1.edges[1]?.load).toBe(0);
+
+    // After 3 steps: e1's pipeline is full but the value hasn't reached p yet.
+    expect(runForSteps(graph, 3).edges[1]?.load).toBe(0);
+
+    // After 4 steps: e1's first emission has arrived at p, which forwards it.
+    expect(runForSteps(graph, 4).edges[1]?.load).toBe(50);
+  });
+
+  it('drains the pipeline after a source stops emitting', () => {
+    const graph: Graph = {
+      nodes: [
+        { id: 's', kind: 'source', rate: 40 },
+        { id: 't', kind: 'sink' },
+      ],
+      edges: [edge({ id: 'e', source: 's', target: 't', capacity: 100, latency: 2 })],
+    };
+    // Run a few steps with the source emitting.
+    const primed = runForSteps(graph, 5);
+    expect(inflightOn(primed.edges[0]!)).toBeGreaterThan(0);
+
+    // Set rate to 0 and step until the pipeline empties.
+    const stopped: Graph = {
+      ...primed,
+      nodes: primed.nodes.map((n) =>
+        n.kind === 'source' ? { ...n, rate: 0 } : n,
+      ),
+    };
+    const drained = runForSteps(stopped, 3);
+    expect(drained.edges[0]?.load).toBe(0);
+    expect(inflightOn(drained.edges[0]!)).toBe(0);
+  });
+
+  it('treats latency=0 as no delay (delivers same step)', () => {
+    const graph: Graph = {
+      nodes: [
+        { id: 's', kind: 'source', rate: 40 },
+        { id: 'p', kind: 'processor' },
+        { id: 't', kind: 'sink' },
+      ],
+      edges: [
+        edge({ id: 'e1', source: 's', target: 'p', capacity: 100, latency: 0 }),
+        edge({ id: 'e2', source: 'p', target: 't', capacity: 100, latency: 0 }),
+      ],
+    };
+    const result = step(graph);
+    expect(result.edges.map((e) => e.load)).toEqual([40, 40]);
+  });
+
+  it('runForSteps applies step n times and returns input for n<=0', () => {
+    const graph: Graph = {
+      nodes: [{ id: 's', kind: 'source', rate: 5 }, { id: 't', kind: 'sink' }],
+      edges: [edge({ id: 'e', source: 's', target: 't', capacity: 100, latency: 1 })],
+    };
+    expect(runForSteps(graph, 0)).toEqual(graph);
+    expect(runForSteps(graph, -1)).toEqual(graph);
+    expect(runForSteps(graph, 2)).toEqual(step(step(graph)));
   });
 
   it('marks an edge as overloaded when desired flow exceeds capacity', () => {

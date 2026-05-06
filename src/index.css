@@ -37,6 +37,9 @@ html, body, #root { height: 100%; margin: 0; }
 .controls__group { display: flex; align-items: center; gap: 6px; padding-left: 16px; border-left: 1px solid #334155; }
 .controls__group-label { font-size: 11px; color: #cbd5e1; text-transform: uppercase; letter-spacing: 0.05em; margin-right: 4px; }
 .controls__buttons { display: flex; gap: 8px; margin-left: auto; }
+.controls button:disabled { opacity: 0.4; cursor: not-allowed; }
+.controls__play--on { background: #22c55e; border-color: #16a34a; }
+.controls__play--on:hover { background: #16a34a; }
 .controls button {
   padding: 6px 14px;
   font-size: 13px;

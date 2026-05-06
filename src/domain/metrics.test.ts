@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { computeMetrics } from './metrics';
 import { sampleGraph } from './sampleGraph';
-import { step } from './simulation';
+import { runForSteps } from './simulation';
 import type { Graph } from './types';
+
+/** Steps enough to fill every pipeline in the sample graph (max path latency). */
+const SAMPLE_STEADY_STATE_STEPS = 6;
 
 describe('computeMetrics', () => {
   it('returns zeroed metrics for an empty graph', () => {
@@ -36,8 +39,8 @@ describe('computeMetrics', () => {
     expect(computeMetrics(graph).sourceEmission).toBe(0);
   });
 
-  it('sums sink throughput only over edges entering sinks', () => {
-    const stepped = step(sampleGraph);
+  it('sums sink throughput only over edges entering sinks (at steady state)', () => {
+    const stepped = runForSteps(sampleGraph, SAMPLE_STEADY_STATE_STEPS);
     const metrics = computeMetrics(stepped);
     const sinkInflow = stepped.edges
       .filter((e) => e.target === 'sink')
@@ -46,8 +49,8 @@ describe('computeMetrics', () => {
     expect(metrics.sinkThroughput).toBeCloseTo(100);
   });
 
-  it('reports the sample graph status spread after one step', () => {
-    const metrics = computeMetrics(step(sampleGraph));
+  it('reports the sample graph status spread at steady state', () => {
+    const metrics = computeMetrics(runForSteps(sampleGraph, SAMPLE_STEADY_STATE_STEPS));
     expect(metrics.statusCounts).toEqual({
       healthy: 1,
       stressed: 1,
@@ -58,7 +61,7 @@ describe('computeMetrics', () => {
   });
 
   it('computes average and max utilization across all edges', () => {
-    const stepped = step(sampleGraph);
+    const stepped = runForSteps(sampleGraph, SAMPLE_STEADY_STATE_STEPS);
     const metrics = computeMetrics(stepped);
     expect(metrics.maxUtilization).toBeGreaterThan(1);
     expect(metrics.averageUtilization).toBeLessThan(metrics.maxUtilization);

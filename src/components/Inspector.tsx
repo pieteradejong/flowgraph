@@ -1,4 +1,5 @@
 import type { ChangeEvent } from 'react';
+import { inflightOn } from '../domain/simulation';
 import type { FlowEdge, FlowNode, Graph, NodeKind } from '../domain/types';
 
 interface Props {
@@ -114,6 +115,11 @@ const EdgeInspector = ({ edge, onUpdate, onDelete }: EdgeInspectorProps) => (
       />
     </Field>
     <Field label="load"><span className="inspector__readonly">{edge.load.toFixed(2)}</span></Field>
+    {edge.latency > 0 && (
+      <Field label="in-flight">
+        <span className="inspector__readonly">{inflightOn(edge).toFixed(2)}</span>
+      </Field>
+    )}
     <Field label="status"><span className="inspector__readonly">{edge.status}</span></Field>
     <button type="button" className="inspector__delete" onClick={() => onDelete(edge.id)}>
       Delete edge

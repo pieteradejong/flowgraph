@@ -1,11 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { sampleGraph } from './sampleGraph';
-import { step } from './simulation';
+import { runForSteps } from './simulation';
 import type { EdgeStatus } from './types';
 
 describe('sampleGraph', () => {
-  it('exercises every status band after a single step', () => {
-    const result = step(sampleGraph);
+  it('exercises every status band at steady state', () => {
+    // Longest latency path through the graph is 1 + 2 + 1 = 4; 6 steps is
+    // generous and keeps the test resilient to small future tweaks.
+    const result = runForSteps(sampleGraph, 6);
     const counts = result.edges.reduce<Record<EdgeStatus, number>>(
       (acc, e) => ({ ...acc, [e.status]: (acc[e.status] ?? 0) + 1 }),
       { healthy: 0, stressed: 0, saturated: 0, overloaded: 0 },
