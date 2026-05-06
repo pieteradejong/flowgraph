@@ -5,6 +5,7 @@ export const STATUS_COLORS: Record<EdgeStatus, string> = {
   stressed: '#eab308',
   saturated: '#f97316',
   overloaded: '#ef4444',
+  down: '#64748b',
 };
 
 export const STATUS_STROKE_WIDTH: Record<EdgeStatus, number> = {
@@ -12,6 +13,7 @@ export const STATUS_STROKE_WIDTH: Record<EdgeStatus, number> = {
   stressed: 3,
   saturated: 4,
   overloaded: 5,
+  down: 2,
 };
 
 export const NODE_BACKGROUND: Record<'source' | 'processor' | 'sink', string> = {

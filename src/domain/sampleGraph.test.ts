@@ -10,9 +10,9 @@ describe('sampleGraph', () => {
     const result = runForSteps(sampleGraph, 6);
     const counts = result.edges.reduce<Record<EdgeStatus, number>>(
       (acc, e) => ({ ...acc, [e.status]: (acc[e.status] ?? 0) + 1 }),
-      { healthy: 0, stressed: 0, saturated: 0, overloaded: 0 },
+      { healthy: 0, stressed: 0, saturated: 0, overloaded: 0, down: 0 },
     );
-    expect(counts).toEqual({ healthy: 1, stressed: 1, saturated: 2, overloaded: 1 });
+    expect(counts).toEqual({ healthy: 1, stressed: 1, saturated: 2, overloaded: 1, down: 0 });
   });
 
   it('starts with all edges idle (load 0, status healthy)', () => {

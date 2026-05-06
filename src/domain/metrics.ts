@@ -21,6 +21,7 @@ const EMPTY_STATUS_COUNTS: Record<EdgeStatus, number> = {
   stressed: 0,
   saturated: 0,
   overloaded: 0,
+  down: 0,
 };
 
 /**

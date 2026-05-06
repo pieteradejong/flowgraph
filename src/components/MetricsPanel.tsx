@@ -27,7 +27,7 @@ export const MetricsPanel = ({ graph }: Props) => {
         <span className="metrics__value">{(m.maxUtilization * 100).toFixed(0)}%</span>
       </div>
       <div className="metrics__group metrics__group--statuses">
-        {(['healthy', 'stressed', 'saturated', 'overloaded'] as const).map((s) => (
+        {(['healthy', 'stressed', 'saturated', 'overloaded', 'down'] as const).map((s) => (
           <span key={s} className="metrics__status">
             <span className="metrics__swatch" style={{ background: STATUS_COLORS[s] }} />
             {s}: {m.statusCounts[s]}

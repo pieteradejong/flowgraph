@@ -14,7 +14,7 @@ describe('computeMetrics', () => {
       sinkThroughput: 0,
       averageUtilization: 0,
       maxUtilization: 0,
-      statusCounts: { healthy: 0, stressed: 0, saturated: 0, overloaded: 0 },
+      statusCounts: { healthy: 0, stressed: 0, saturated: 0, overloaded: 0, down: 0 },
       bottleneckEdgeIds: [],
     });
   });
@@ -46,7 +46,11 @@ describe('computeMetrics', () => {
       .filter((e) => e.target === 'sink')
       .reduce((sum, e) => sum + e.load, 0);
     expect(metrics.sinkThroughput).toBeCloseTo(sinkInflow);
-    expect(metrics.sinkThroughput).toBeCloseTo(100);
+    // With backpressure, capped flow is dropped silently, so sink throughput
+    // can be less than source emission. It should still be positive and
+    // bounded by source emission.
+    expect(metrics.sinkThroughput).toBeGreaterThan(0);
+    expect(metrics.sinkThroughput).toBeLessThanOrEqual(metrics.sourceEmission);
   });
 
   it('reports the sample graph status spread at steady state', () => {
@@ -56,6 +60,7 @@ describe('computeMetrics', () => {
       stressed: 1,
       saturated: 2,
       overloaded: 1,
+      down: 0,
     });
     expect(metrics.bottleneckEdgeIds).toEqual(['e5']);
   });
@@ -63,8 +68,11 @@ describe('computeMetrics', () => {
   it('computes average and max utilization across all edges', () => {
     const stepped = runForSteps(sampleGraph, SAMPLE_STEADY_STATE_STEPS);
     const metrics = computeMetrics(stepped);
-    expect(metrics.maxUtilization).toBeGreaterThan(1);
-    expect(metrics.averageUtilization).toBeLessThan(metrics.maxUtilization);
+    // With backpressure, load is capped at capacity, so utilization tops out
+    // at 1.0 (= saturated). The "demand exceeded supply" signal lives in
+    // statusCounts.overloaded / bottleneckEdgeIds, not maxUtilization.
+    expect(metrics.maxUtilization).toBeLessThanOrEqual(1);
+    expect(metrics.maxUtilization).toBeGreaterThan(0.9);
     expect(metrics.averageUtilization).toBeGreaterThan(0);
   });
 

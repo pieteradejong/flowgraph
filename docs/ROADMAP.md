@@ -1,11 +1,11 @@
 # FlowGraph Roadmap
 
-## Phase 1 — Local Simulator (mostly complete)
+## Phase 1 — Local Simulator (complete)
 - [x] Simulation step engine
 - [x] Edge utilization visualization
 - [x] Metrics panel
 - [x] Sample graph
-- [ ] Graph editor (build your own graph in the UI — currently the canvas is read-only)
+- [x] Graph editor (Tier 1: add / connect / edit / delete via Inspector)
 
 ## Phase 2 — Persistence (Supabase)
 - Save/load simulations
@@ -31,13 +31,13 @@
 
 > Pure domain work — no persistence required. Independent of Phase 2/3.
 
-## Phase 5 — Advanced Simulation
-- Backpressure (downstream saturation throttles upstream emission)
-- Queueing (per-edge buffer with finite size)
-- Failures (node/edge can be marked down for N steps)
-- Latency propagation (the existing `latency` field becomes meaningful — flow takes N steps to traverse)
+## Phase 5 — Advanced Simulation (complete)
+- [x] Latency propagation — flow takes `latency` steps to traverse via per-edge pipelines
+- [x] Backpressure — `load` capped at `capacity`; `status` from desired demand so `overloaded` still surfaces (Model A: lossy, no upstream cascade)
+- [x] Queueing — optional `bufferSize` caps total in-flight flow (`sum(pipeline)`)
+- [x] Failures — `downForSteps` on nodes & edges, ticks down per step; UI Fail/Recover buttons; new `down` edge status
 
-> The substantive simulator upgrade. `step()` rewrite.
+> The substantive simulator upgrade. Multi-pass true backpressure (conservation cascade) deferred.
 
 ## Phase 6 — Visualization
 - Time-series charts (utilization / throughput per step)
@@ -52,7 +52,8 @@
 
 These are quality / hygiene items that apply across phases. Pull them in opportunistically.
 
-- **Graph editor** — currently the only Phase 1 deliverable not built. Add nodes / connect edges / edit fields directly on the canvas.
+- **Graph editor Tier 2** — drag nodes to reposition; persist positions in graph; replace BFS auto-layout with manual placement.
+- **True backpressure** — multi-pass / fixed-point so dropped flow propagates back to sources (mass conservation).
 - **UI tests** — `@testing-library/react` + `jsdom`; smoke tests for App, Controls, Inspector, MetricsPanel. Domain has 100% coverage; UI has 0%.
 - **Lint + format** — ESLint (typescript-eslint, react, react-hooks) and Prettier; wire `lint` and `format` scripts. `./scripts/test.sh` already warns these are missing.
 - **README** — `docs/README.md` still describes the generic project template, not FlowGraph. Anyone landing on the GitHub repo sees the wrong project.

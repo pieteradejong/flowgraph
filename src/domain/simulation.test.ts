@@ -179,7 +179,7 @@ describe('step', () => {
     expect(runForSteps(graph, 2)).toEqual(step(step(graph)));
   });
 
-  it('marks an edge as overloaded when desired flow exceeds capacity', () => {
+  it('caps actual load at capacity but reports overloaded status from desired demand', () => {
     const graph: Graph = {
       nodes: [
         { id: 's', kind: 'source', rate: 200 },
@@ -188,8 +188,84 @@ describe('step', () => {
       edges: [edge({ id: 'e', source: 's', target: 't', capacity: 100 })],
     };
     const result = step(graph);
-    expect(result.edges[0]?.load).toBe(200);
+    // Backpressure: actual load capped at capacity ...
+    expect(result.edges[0]?.load).toBe(100);
+    // ... but status still reflects that demand exceeds capacity.
     expect(result.edges[0]?.status).toBe('overloaded');
+  });
+
+  it('queueing: bufferSize limits total in-flight flow on the edge', () => {
+    const graph: Graph = {
+      nodes: [
+        { id: 's', kind: 'source', rate: 50 },
+        { id: 't', kind: 'sink' },
+      ],
+      edges: [
+        {
+          id: 'e',
+          source: 's',
+          target: 't',
+          capacity: 80,
+          latency: 3,
+          load: 0,
+          status: 'healthy',
+          bufferSize: 60,
+        },
+      ],
+    };
+    // Each step pushes 50 capped by buffer headroom. Pipeline length 3, so
+    // after several steps total in-flight saturates near bufferSize.
+    const stepped = runForSteps(graph, 10);
+    expect(inflightOn(stepped.edges[0]!)).toBeLessThanOrEqual(60 + 1e-6);
+  });
+
+  it('failure on a node: zero outflow while down, recovers afterwards', () => {
+    const graph: Graph = {
+      nodes: [
+        { id: 's', kind: 'source', rate: 40, downForSteps: 2 },
+        { id: 't', kind: 'sink' },
+      ],
+      edges: [edge({ id: 'e', source: 's', target: 't', capacity: 100, latency: 0 })],
+    };
+    const s1 = step(graph);
+    expect(s1.edges[0]?.load).toBe(0);
+    expect(s1.nodes[0]?.downForSteps).toBe(1);
+
+    const s2 = step(s1);
+    expect(s2.edges[0]?.load).toBe(0);
+    expect(s2.nodes[0]?.downForSteps).toBe(0);
+
+    const s3 = step(s2);
+    // Source recovered; flow resumes.
+    expect(s3.edges[0]?.load).toBe(40);
+  });
+
+  it('failure on an edge: status is "down", load is 0, pipeline drains', () => {
+    const graph: Graph = {
+      nodes: [
+        { id: 's', kind: 'source', rate: 30 },
+        { id: 't', kind: 'sink' },
+      ],
+      edges: [
+        {
+          id: 'e',
+          source: 's',
+          target: 't',
+          capacity: 100,
+          latency: 2,
+          load: 0,
+          status: 'healthy',
+          pipeline: [30, 30],
+          downForSteps: 5,
+        },
+      ],
+    };
+    const s1 = step(graph);
+    expect(s1.edges[0]?.status).toBe('down');
+    expect(s1.edges[0]?.load).toBe(0);
+    // Pipeline drains: head delivered, no new push.
+    expect(s1.edges[0]?.pipeline).toEqual([30, 0]);
+    expect(s1.edges[0]?.downForSteps).toBe(4);
   });
 
   it('terminates and produces zero load on a cycle', () => {
