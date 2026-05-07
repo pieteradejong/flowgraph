@@ -10,6 +10,11 @@ interface Props {
   onAddNode: (kind: NodeKind) => void;
   playing: boolean;
   onTogglePlay: () => void;
+  persistenceAvailable: boolean;
+  currentGraphName: string | null;
+  canSnapshot: boolean;
+  onSnapshot: () => void;
+  onOpenLibrary: () => void;
 }
 
 export const Controls = ({
@@ -21,6 +26,11 @@ export const Controls = ({
   onAddNode,
   playing,
   onTogglePlay,
+  persistenceAvailable,
+  currentGraphName,
+  canSnapshot,
+  onSnapshot,
+  onOpenLibrary,
 }: Props) => (
   <header className="controls">
     <h1 className="controls__title">FlowGraph</h1>
@@ -39,6 +49,15 @@ export const Controls = ({
       <button type="button" onClick={() => onAddNode('processor')}>Processor</button>
       <button type="button" onClick={() => onAddNode('sink')}>Sink</button>
     </div>
+    {persistenceAvailable && (
+      <div className="controls__group controls__group--persistence">
+        <span className="controls__group-label">
+          {currentGraphName ?? 'unsaved'}
+        </span>
+        <button type="button" onClick={onSnapshot} disabled={!canSnapshot}>Save</button>
+        <button type="button" onClick={onOpenLibrary}>Open / Save as…</button>
+      </div>
+    )}
     <div className="controls__buttons">
       <button
         type="button"

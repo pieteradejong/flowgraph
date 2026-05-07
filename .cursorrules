@@ -60,14 +60,17 @@ Important: the nature of this project is this:
 Project: FlowGraph — graph-based operational simulator
 
 Rules:
-- Local-only first. Do NOT introduce Supabase yet.
-- Keep simulation logic separate from UI.
+- Local-only Supabase via the CLI (Docker stack at localhost:54321). Hosted Supabase is intentionally out of scope.
+- Keep simulation logic separate from UI and from persistence.
+- src/domain MUST NOT import from src/persistence. The persistence layer
+  imports domain types; App.tsx is the only wiring point.
 - Use TypeScript with clear domain types.
 - Prefer simple, maintainable code over abstractions.
 
 Architecture:
-src/domain → simulation logic (pure functions)
-src/components → React UI
+src/domain      → simulation logic (pure functions)
+src/persistence → Supabase client + graph CRUD + topology serializer
+src/components  → React UI
 React Flow for graph rendering
 
 Simulation:

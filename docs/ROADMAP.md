@@ -7,13 +7,13 @@
 - [x] Sample graph
 - [x] Graph editor (Tier 1: add / connect / edit / delete via Inspector)
 
-## Phase 2 — Persistence (Supabase)
-- Save/load simulations
-- Graph versioning
-- Basic auth
-
-> Blocked by `.cursorrules`: "Local-only first. Do NOT introduce Supabase yet."
-> Lift the rule when ready.
+## Phase 2 — Persistence (local Supabase) (complete)
+- [x] Local Supabase stack via the CLI (Docker at `localhost:54321`); hosted is out of scope
+- [x] Schema: `graphs` + `graph_versions` with RLS, immutable snapshot history
+- [x] Anonymous auth (browser-bound; trivial upgrade to email/password later)
+- [x] Persistence layer (`src/persistence/`): client, serializer, graph CRUD, mocked-client tests
+- [x] UI: Save / Open library / Version history sidebar; offline banner when stack is down
+- [x] Topology-only persistence; runtime state reset on load (`data` column is `jsonb`, so resume-mid-simulation is a serializer-only change later)
 
 ## Phase 3 — Simulation Runs
 - Store run results
