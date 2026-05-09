@@ -1,5 +1,7 @@
 # Architecture
 
+Clone and run overview: [README.md](../README.md). Phasing: [ROADMAP.md](ROADMAP.md).
+
 ## Core principle
 
 The simulation engine is pure and UI-independent. The persistence layer is

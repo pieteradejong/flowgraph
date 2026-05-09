@@ -44,7 +44,7 @@ Status: verified (local stack + migrations + persistence smoke script).
   - [x] Create graph → 3 snapshots → restore v1 → delete graph — exercised via `node scripts/smoke-phase2.mjs` (same flows as the UI against PostgREST + RLS)
   - [x] Verify RLS: second anonymous session cannot list the first session’s graphs — same script (equivalent to a private/incognito window)
 
-Repeatable check (requires Docker + `./scripts/db.sh start`): `node scripts/smoke-phase2.mjs`.
+Repeatable check (requires Docker + `./scripts/db.sh start`): `npm run smoke:phase2` or `node scripts/smoke-phase2.mjs`.
 
 Local API port is `[api].port` in [`supabase/config.toml`](../supabase/config.toml) (defaults to **55321** in-repo so another Supabase stack can keep **54321**). Database bind port follows `[db].port` (**55322**). Inspect schema: `docker exec supabase_db_flowgraph psql -U postgres -d postgres -c "\\dt public.*"` and `select * from pg_policies where schemaname = 'public';`.
 

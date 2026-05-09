@@ -56,6 +56,6 @@ These are quality / hygiene items that apply across phases. Pull them in opportu
 - **True backpressure** — multi-pass / fixed-point so dropped flow propagates back to sources (mass conservation).
 - **UI tests** — `@testing-library/react` + `jsdom`; smoke tests for App, Controls, Inspector, MetricsPanel. Domain has 100% coverage; UI has 0%.
 - **Lint + format** — ESLint (typescript-eslint, react, react-hooks) and Prettier; wire `lint` and `format` scripts. `./scripts/test.sh` already warns these are missing.
-- **README** — `docs/README.md` still describes the generic project template, not FlowGraph. Anyone landing on the GitHub repo sees the wrong project.
+- **README** — [x] Root `README.md` + `docs/README.md` describe FlowGraph and link the doc set.
 - **Pre-commit hook** — `simple-git-hooks` + `lint-staged` running `vitest related --run` and the linter on changed files.
 - **Property-based tests** — `fast-check` for `step` invariants (no NaN/Infinity, determinism, mass conservation on linear chains). Catches a class of bugs example-based tests never will, especially as `step` grows in Phase 5.

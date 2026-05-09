@@ -2,6 +2,8 @@
 
 Standards for logging and health checks. These patterns apply to any project.
 
+**FlowGraph** is a browser app with no dedicated backend service in this repo; `./scripts/run.sh` health checks target optional template backends. Instrument the UI or add a server only when the roadmap calls for it.
+
 ---
 
 ## Logging

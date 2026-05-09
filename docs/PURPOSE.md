@@ -36,7 +36,7 @@ Phases 1–6 in `docs/ROADMAP.md` map directly to these capabilities.
 These are not negotiable in normal development. Lifting one is a deliberate, marked decision.
 
 1. **Simulation is pure and UI-independent.** The domain layer (`src/domain/`) is a set of pure functions over plain data. UI never reaches into simulation logic; simulation never imports React. This is what lets the engine be tested exhaustively, swapped into other contexts (CLI, batch run, eventually a Supabase-backed run store), and reasoned about independently.
-2. **Local-first.** No network dependency for the core loop. Persistence (Phase 2, Supabase) will be additive, never required to use the tool. Anyone should be able to clone, run `./scripts/init.sh`, and have a working app within a minute.
+2. **Local-first.** No network dependency for the core simulation loop. Persistence (Phase 2, local Supabase) is optional: save/load works only when the stack is up; stepping and editing work offline. Anyone should be able to clone, run `./scripts/init.sh`, and have a working app within a minute.
 3. **Visible behaviour over hidden cleverness.** Status bands, edge colors, animated overloads exist because seeing the bottleneck is the entire product. Any modelling change that improves accuracy at the cost of legibility is suspect.
 4. **Small, deployable iterations.** `./scripts/test.sh` must always exit 0. Phase boundaries are real; don't half-build features across phases.
 5. **Three scripts rule everything.** `init.sh`, `run.sh`, `test.sh` are the contract. If something isn't reachable through those, it doesn't exist.
@@ -48,7 +48,7 @@ To keep the scope honest, FlowGraph deliberately is not:
 
 - **A discrete-event simulator.** No event queue, no continuous time. Updates are step-discrete and synchronous.
 - **A modelling DSL or graph language.** The data model is intentionally tiny: typed records, no expressions, no formulas in fields.
-- **A multi-user collaborative editor.** Even after Phase 2 (Supabase auth), it's single-user-per-graph at any moment.
+- **A multi-user collaborative editor.** Local Supabase uses anonymous sessions per browser; the UI remains single-user-at-a-time for any given graph.
 - **A monitoring or observability tool.** It does not ingest real telemetry. Inputs are user-authored.
 - **A general-purpose graph editor.** Graphs serve the simulator. Features that don't make the simulation more useful (export to GraphML, visual diff, etc.) are out of scope unless explicitly added to the roadmap.
 
@@ -60,7 +60,7 @@ To keep the scope honest, FlowGraph deliberately is not:
 | `ROADMAP.md` | Phased plan: what we build and in what order. |
 | `ARCHITECTURE.md` | Module boundaries, key invariants, where things go. |
 | `CONVENTIONS.md` | Code style and per-language conventions. |
-| `PHASE_N_TASKS.md` | The task breakdown for the active phase. |
+| `PHASE_N_TASKS.md` | Task breakdown by phase (see highest `N` for latest detail). |
 | `.cursorrules` | Operating instructions for AI coding assistants working in this repo. |
 
 If two docs disagree, `PURPOSE.md` defines the constraints, `ARCHITECTURE.md` defines the structure, `ROADMAP.md` defines the order, and `PHASE_N_TASKS.md` defines the immediate next steps. Newer wins on tactics; this doc wins on principles.

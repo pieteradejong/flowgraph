@@ -2,6 +2,8 @@
 
 A framework for developing software projects with LLM assistance (Cursor, Claude, Copilot, etc.). This document establishes the structure, conventions, and contracts that enable effective human-LLM collaboration.
 
+**FlowGraph** uses the same three-scripts contract (`init.sh`, `run.sh`, `test.sh`) plus `scripts/db.sh` for optional local Supabase. Project-specific intent and structure live in [PURPOSE.md](PURPOSE.md), [ROADMAP.md](ROADMAP.md), and [ARCHITECTURE.md](ARCHITECTURE.md).
+
 ---
 
 ## Core Principles
