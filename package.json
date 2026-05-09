@@ -11,7 +11,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "coverage": "vitest run --coverage",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "smoke:phase2": "node scripts/smoke-phase2.mjs"
   },
   "devDependencies": {
     "@types/react": "^19.2.14",

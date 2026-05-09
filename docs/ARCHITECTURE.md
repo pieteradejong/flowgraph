@@ -33,7 +33,7 @@ UI (React)              src/components/, src/App.tsx
 ## Persistence layer
 
 Local-only Supabase via the Supabase CLI. Postgres + GoTrue + PostgREST run
-in Docker at `localhost:54321`. Hosted Supabase is intentionally out of
+in Docker; the API URL/port come from `supabase/config.toml` (`[api].port`, **55321** in-repo by default). Hosted Supabase is intentionally out of
 scope; the `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` env vars are local-
 stack values only.
 

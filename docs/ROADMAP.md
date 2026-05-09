@@ -8,7 +8,7 @@
 - [x] Graph editor (Tier 1: add / connect / edit / delete via Inspector)
 
 ## Phase 2 — Persistence (local Supabase) (complete)
-- [x] Local Supabase stack via the CLI (Docker at `localhost:54321`); hosted is out of scope
+- [x] Local Supabase stack via the CLI (Docker; API URL/port in `supabase/config.toml`, default **55321** in-repo to avoid clashing with another local Supabase on **54321**); hosted is out of scope
 - [x] Schema: `graphs` + `graph_versions` with RLS, immutable snapshot history
 - [x] Anonymous auth (browser-bound; trivial upgrade to email/password later)
 - [x] Persistence layer (`src/persistence/`): client, serializer, graph CRUD, mocked-client tests

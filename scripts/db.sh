@@ -71,17 +71,18 @@ cmd_migrate() {
 cmd_sync_env() {
   cd "$PROJECT_ROOT"
   local status_output
-  if ! status_output="$(supabase status 2>/dev/null)"; then
+  if ! status_output="$(supabase status -o env 2>/dev/null)"; then
     echo "WARN: supabase not running; cannot sync .env.local" >&2
     return 0
   fi
 
   local api_url anon_key
-  api_url="$(printf '%s\n' "$status_output" | awk -F': +' '/API URL/ {print $2; exit}')"
-  anon_key="$(printf '%s\n' "$status_output" | awk -F': +' '/anon key/ {print $2; exit}')"
+  # Prefer machine-readable `supabase status -o env` (Pretty output labels changed in newer CLI).
+  api_url="$(printf '%s\n' "$status_output" | sed -n 's/^API_URL="\(.*\)"$/\1/p' | head -1)"
+  anon_key="$(printf '%s\n' "$status_output" | sed -n 's/^ANON_KEY="\(.*\)"$/\1/p' | head -1)"
 
   if [ -z "$api_url" ] || [ -z "$anon_key" ]; then
-    echo "WARN: could not parse API URL / anon key from supabase status" >&2
+    echo "WARN: could not parse API_URL / ANON_KEY from supabase status -o env" >&2
     return 0
   fi
 
